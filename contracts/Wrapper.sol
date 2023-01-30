@@ -10,11 +10,11 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 // ============================ Interfaces ========================
 
-interface INFT {
+interface IGoldfinchPool {
 
     struct LpPosition {
         uint256 amount;
@@ -26,17 +26,23 @@ interface INFT {
     function claimRewards() external;
 }
 
+interface IStakingContract {
+    function notifyRewardAmount(address, uint256) external;
+}
+
 // ============================ Contract ==========================
 
 /// @title LiquiDeFi protocol
 /// @author LiquiDeFi Protocol core team 
 
-contract Wrapper is ERC20 {
+contract Wrapper is ERC20, Ownable {
 
     using SafeERC20 for IERC20;
 
 
     // ============================ State Variables ====================
+
+    IStakingContract stakingContract;
 
     address goldfinchPool;
     uint256 sellOrderID;
@@ -54,15 +60,24 @@ contract Wrapper is ERC20 {
 
     // ============================ Constructor ========================
 
-    constructor(address _goldfinchPool, address _stablecoin) ERC20("LiquiDeFi", "LQF") {
+    constructor(
+        address _goldfinchPool,
+        address _stablecoin
+    )
+    ERC20("LiquiDeFi", "LQF")
+    {
         goldfinchPool = _goldfinchPool;
         stablecoin = _stablecoin;
     }
 
     // ============================ Functions ==========================
 
+    function setStakingContract(address _stakingContract) public onlyOwner {
+        stakingContract = IStakingContract(_stakingContract);
+    }
+
     function depositERC721(uint256 tokenId) external {
-        uint256 amountToMint = INFT(goldfinchPool).tokenIdToPosition(tokenId).amount;
+        uint256 amountToMint = IGoldfinchPool(goldfinchPool).tokenIdToPosition(tokenId).amount;
         IERC721(goldfinchPool).safeTransferFrom(_msgSender(), address(this), tokenId);
         _mint(_msgSender(), amountToMint);
     }
@@ -91,7 +106,10 @@ contract Wrapper is ERC20 {
     }
 
     function claimRewardsOnGoldfinch() external {
-        INFT(goldfinchPool).claimRewards();
+        uint256 initBalance = IERC20(stablecoin).balanceOf(address(this));
+        IGoldfinchPool(goldfinchPool).claimRewards();
+        uint256 newBalance = IERC20(stablecoin).balanceOf(address(this));
+        stakingContract.notifyRewardAmount(stablecoin, (newBalance - initBalance));
     }
 
 

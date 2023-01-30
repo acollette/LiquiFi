@@ -19,7 +19,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 /// @title LiquiDeFi protocol
 /// @author LiquiDeFi Protocol core team 
 
-contract NFT is ERC721 {
+contract GoldfinchPool is ERC721 {
 
     using SafeERC20 for IERC20;
 
@@ -57,7 +57,7 @@ contract NFT is ERC721 {
     }
 
     function claimRewards() external {
-        
+        IERC20(stablecoin).safeTransfer(_msgSender(), IERC20(stablecoin).balanceOf(address(this)));
     }
 
 }
