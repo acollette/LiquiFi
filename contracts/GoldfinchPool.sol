@@ -26,6 +26,7 @@ contract GoldfinchPool is ERC721 {
     // ============================ State Variables ====================
 
     address stablecoin;
+    address rewards;
     uint256 tokenCount;
 
     struct LpPosition {
@@ -38,8 +39,9 @@ contract GoldfinchPool is ERC721 {
 
     // ============================ Constructor ========================
 
-    constructor(address _stablecoin) ERC721("NFT", "NFT") {
+    constructor(address _stablecoin, address _rewards) ERC721("NFT", "NFT") {
         stablecoin = _stablecoin;
+        rewards = _rewards;
     }
 
     // ============================ Functions ==========================
@@ -57,7 +59,7 @@ contract GoldfinchPool is ERC721 {
     }
 
     function claimRewards() external {
-        IERC20(stablecoin).safeTransfer(_msgSender(), IERC20(stablecoin).balanceOf(address(this)));
+        IERC20(rewards).safeTransfer(_msgSender(), IERC20(rewards).balanceOf(address(this)));
     }
 
 }

@@ -51,8 +51,8 @@
       }
     },
     "contracts/GoldfinchPool.sol": {
-      "lastModificationDate": 1675255138642,
-      "contentHash": "90ea67040456428bd782bedfe9b9586a",
+      "lastModificationDate": 1675272817467,
+      "contentHash": "976a6398be721fe747b9095dd3a8042a",
       "sourceName": "contracts/GoldfinchPool.sol",
       "solcConfig": {
         "settings": {
@@ -154,8 +154,8 @@
       }
     },
     "contracts/Wrapper.sol": {
-      "lastModificationDate": 1675261572132,
-      "contentHash": "8683f58d7eebd04fa55c5693cc5514a5",
+      "lastModificationDate": 1675272922441,
+      "contentHash": "29d4c20392135c9376a1e5ce716876ec",
       "sourceName": "contracts/Wrapper.sol",
       "solcConfig": {
         "settings": {
@@ -1257,8 +1257,8 @@
       }
     },
     "test/foundry/test.t.sol": {
-      "lastModificationDate": 1675261499937,
-      "contentHash": "35f18559016d26c3f2d0e9048f29a559",
+      "lastModificationDate": 1675273956215,
+      "contentHash": "805c997da163bbbb75a4098107af637c",
       "sourceName": "test/foundry/test.t.sol",
       "solcConfig": {
         "settings": {
@@ -1321,6 +1321,9 @@
       "artifacts": {
         "IGoldfinchPool": {
           "0.8.16+commit.07a7930e.Darwin.appleclang": "test.t.sol/IGoldfinchPool.json"
+        },
+        "IStakingContract": {
+          "0.8.16+commit.07a7930e.Darwin.appleclang": "test.t.sol/IStakingContract.json"
         },
         "IWrapper": {
           "0.8.16+commit.07a7930e.Darwin.appleclang": "test.t.sol/IWrapper.json"

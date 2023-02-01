@@ -25,6 +25,11 @@ interface IWrapper {
     function buyTokens(uint256, uint256) external;
 }
 
+interface IStakingContract {
+    function stake(uint256) external;
+    function getReward() external;
+}
+
 contract Test_Liquify is Test {
 
     using SafeERC20 for IERC20;
@@ -82,17 +87,39 @@ contract Test_Liquify is Test {
         emit log_named_uint("seller DAI balance after-order", IERC20(DAI).balanceOf(seller));
     }
 
+    function claimRewards() public {
+        emit log_string("claim rewards on Goldfinch and send them to ERC20 staking contract");
+        ERC20Wrapper.claimRewardsOnGoldfinch();
+        emit log_named_uint("FRAX balance of stakingcontract", IERC20(rewardsFRAX).balanceOf(address(stake)));
+    }
+
+    function stakeERC20(address user) public {
+        emit log_string("stake ERC20 token to access Goldfinch rewards");
+        vm.startPrank(user);
+        IERC20(address(ERC20Wrapper)).safeApprove(address(stake), IERC20(address(ERC20Wrapper)).balanceOf(user));
+        IStakingContract(address(stake)).stake(IERC20(address(ERC20Wrapper)).balanceOf(user));
+        vm.stopPrank();
+    }
+
+    function claimStakingRewards(address user) public {
+        emit log_string("claiming rewards...");
+        vm.startPrank(user);
+        IStakingContract(address(stake)).getReward();
+        vm.stopPrank();
+        emit log_named_uint("FRAX received as reward", IERC20(rewardsFRAX).balanceOf(user));
+    }
+
     // Setup
     function setUp() public {
 
         //Instantiate new contract instance
-        pool = new GoldfinchPool(DAI);
-        ERC20Wrapper = new Wrapper(address(pool), DAI);
+        pool = new GoldfinchPool(DAI, rewardsFRAX);
+        ERC20Wrapper = new Wrapper(address(pool), DAI, rewardsFRAX);
         stake = new StakingContract(address(ERC20Wrapper));
 
         ERC20Wrapper.setStakingContract(address(stake));
 
-        stake.addReward(DAI, address(ERC20Wrapper), 30 days);
+        stake.addReward(rewardsFRAX, address(ERC20Wrapper), 30 days);
 
         deal(DAI, lp, 100_000 ether);   
         deal(DAI, buyer, 50_000 ether);
@@ -107,7 +134,13 @@ contract Test_Liquify is Test {
         wrapERC721(1, lp);
         sellERC20(5000 ether, 1 ether, lp);
         buyERC20Tokens(3000 ether, 1, lp);
+        claimRewards();
+        stakeERC20(buyer);
 
+        emit log_string("Fast forwards 15 days for rewards to accrue");
+        vm.warp(block.timestamp + 15 days);
+
+        claimStakingRewards(buyer);
     }
 
 }

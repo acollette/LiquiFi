@@ -48,6 +48,7 @@ contract Wrapper is ERC20, Ownable, IERC721Receiver {
     address goldfinchPool;
     uint256 sellOrderID;
     address stablecoin;
+    address rewards;
 
     struct SellOrder {
         address seller;
@@ -63,12 +64,14 @@ contract Wrapper is ERC20, Ownable, IERC721Receiver {
 
     constructor(
         address _goldfinchPool,
-        address _stablecoin
+        address _stablecoin,
+        address _rewards
     )
     ERC20("LiquiDeFi", "LQF")
     {
         goldfinchPool = _goldfinchPool;
         stablecoin = _stablecoin;
+        rewards = _rewards;
     }
 
     // ============================ Functions ==========================
@@ -116,10 +119,11 @@ contract Wrapper is ERC20, Ownable, IERC721Receiver {
     }
 
     function claimRewardsOnGoldfinch() external {
-        uint256 initBalance = IERC20(stablecoin).balanceOf(address(this));
+        uint256 initBalance = IERC20(rewards).balanceOf(address(this));
         IGoldfinchPool(goldfinchPool).claimRewards();
-        uint256 newBalance = IERC20(stablecoin).balanceOf(address(this));
-        stakingContract.notifyRewardAmount(stablecoin, (newBalance - initBalance));
+        uint256 newBalance = IERC20(rewards).balanceOf(address(this));
+        IERC20(rewards).safeApprove(address(stakingContract), (newBalance - initBalance));
+        stakingContract.notifyRewardAmount(rewards, (newBalance - initBalance));
     }
 
 
