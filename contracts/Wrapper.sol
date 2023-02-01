@@ -11,6 +11,7 @@ import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/interfaces/IERC721Receiver.sol";
 
 // ============================ Interfaces ========================
 
@@ -35,7 +36,7 @@ interface IStakingContract {
 /// @title LiquiDeFi protocol
 /// @author LiquiDeFi Protocol core team 
 
-contract Wrapper is ERC20, Ownable {
+contract Wrapper is ERC20, Ownable, IERC721Receiver {
 
     using SafeERC20 for IERC20;
 
@@ -76,6 +77,15 @@ contract Wrapper is ERC20, Ownable {
         stakingContract = IStakingContract(_stakingContract);
     }
 
+    function onERC721Received(
+        address operator,
+        address from,
+        uint256 tokenId,
+        bytes calldata data
+    ) public returns (bytes4) {
+        return IERC721Receiver.onERC721Received.selector;
+    }
+
     function depositERC721(uint256 tokenId) external {
         uint256 amountToMint = IGoldfinchPool(goldfinchPool).tokenIdToPosition(tokenId).amount;
         IERC721(goldfinchPool).safeTransferFrom(_msgSender(), address(this), tokenId);
@@ -101,7 +111,7 @@ contract Wrapper is ERC20, Ownable {
         sellOrders[orderID].amount -= amount;
 
         IERC20(address(this)).safeTransfer(_msgSender(), amount);
-        IERC20(stablecoin).safeTransferFrom(_msgSender(), sellOrders[orderID].seller, amount * sellOrders[orderID].price);
+        IERC20(stablecoin).safeTransferFrom(_msgSender(), sellOrders[orderID].seller, (amount * sellOrders[orderID].price) / 10**18);
 
     }
 
@@ -111,11 +121,6 @@ contract Wrapper is ERC20, Ownable {
         uint256 newBalance = IERC20(stablecoin).balanceOf(address(this));
         stakingContract.notifyRewardAmount(stablecoin, (newBalance - initBalance));
     }
-
-
-
-
-
 
 
 }
